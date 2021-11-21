@@ -9,7 +9,7 @@ class CNNAutoEncoder(tf.keras.Model):
 
         self.adam_optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
         self.batch_size = 128
-        self.epochs = 1
+        self.epochs = 5
 
         self.encoder_1 = Conv2D(128, 4, 4, 'same',activation='relu')
 
@@ -29,23 +29,23 @@ class CNNAutoEncoder(tf.keras.Model):
 
 
 
-        self.decoder_uy_1 = tf.keras.Sequential()
-        self.decoder_uy_1.add(Conv2DTranspose(256, 4, 2, 'same',activation='relu'))
-        self.decoder_uy_1.add(Conv2DTranspose(128, 4, 5, 'same',activation='relu'))
-
-        self.decoder_uy_2 = tf.keras.Sequential()
-        self.decoder_uy_2.add(Conv2DTranspose(64, 4, 2, 'same',activation='relu'))
-        self.decoder_uy_2.add(Conv2DTranspose(1, 4, 2, 'same',activation='sigmoid'))
-
-
-
-        self.decoder_p_1 = tf.keras.Sequential()
-        self.decoder_p_1.add(Conv2DTranspose(256, 4, 2, 'same',activation='relu'))
-        self.decoder_p_1.add(Conv2DTranspose(128, 4, 5, 'same',activation='relu'))
-
-        self.decoder_p_2 = tf.keras.Sequential()
-        self.decoder_p_2.add(Conv2DTranspose(64, 4, 2, 'same',activation='relu'))
-        self.decoder_p_2.add(Conv2DTranspose(1, 4, 2, 'same',activation='relu'))
+        # self.decoder_uy_1 = tf.keras.Sequential()
+        # self.decoder_uy_1.add(Conv2DTranspose(256, 4, 2, 'same',activation='relu'))
+        # self.decoder_uy_1.add(Conv2DTranspose(128, 4, 5, 'same',activation='relu'))
+        #
+        # self.decoder_uy_2 = tf.keras.Sequential()
+        # self.decoder_uy_2.add(Conv2DTranspose(64, 4, 2, 'same',activation='relu'))
+        # self.decoder_uy_2.add(Conv2DTranspose(1, 4, 2, 'same',activation='sigmoid'))
+        #
+        #
+        #
+        # self.decoder_p_1 = tf.keras.Sequential()
+        # self.decoder_p_1.add(Conv2DTranspose(256, 4, 2, 'same',activation='relu'))
+        # self.decoder_p_1.add(Conv2DTranspose(128, 4, 5, 'same',activation='relu'))
+        #
+        # self.decoder_p_2 = tf.keras.Sequential()
+        # self.decoder_p_2.add(Conv2DTranspose(64, 4, 2, 'same',activation='relu'))
+        # self.decoder_p_2.add(Conv2DTranspose(1, 4, 2, 'same',activation='relu'))
     def call(self, input):
 
         residual = self.encoder_1(input)
@@ -53,14 +53,15 @@ class CNNAutoEncoder(tf.keras.Model):
         densified = self.dense(encoded)
 
         ux_residual = self.decoder_ux_1(densified) + residual
-        uy_residual = self.decoder_uy_1(densified) + residual
-        p_residual = self.decoder_p_1(densified) + residual
+        # uy_residual = self.decoder_uy_1(densified) + residual
+        # p_residual = self.decoder_p_1(densified) + residual
 
         ux = self.decoder_ux_2(ux_residual) * tf.cast(input,tf.float32)
-        uy = self.decoder_uy_2(uy_residual) * tf.cast(input,tf.float32)
-        p = self.decoder_p_2(p_residual) * tf.cast(input,tf.float32)
+        # uy = self.decoder_uy_2(uy_residual) * tf.cast(input,tf.float32)
+        # p = self.decoder_p_2(p_residual) * tf.cast(input,tf.float32)
 
-        return ux, uy, p
+        return ux
+        # return ux, uy, p
 
     def loss_function(self,prediction,true,mask):
         try:
