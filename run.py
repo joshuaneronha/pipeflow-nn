@@ -88,20 +88,7 @@ def main():
 
 	test(Our_Model, geom_test, output_test)
 
-	random = np.random.randint(0,geometries.shape[0])
 
-	ux1, uy1, p1 = Our_Model.call(tf.expand_dims(geometries[random],0))
-	ux1 = tf.squeeze(ux1)
-	uy1 = tf.squeeze(uy1)
-	p1 = tf.squeeze(p1)
-
-	trux = tf.squeeze(outputs[random][0,:,:])
-	truy = tf.squeeze(outputs[random][1,:,:])
-	trup = tf.squeeze(outputs[random][2,:,:])
-
-	testux1 = tf.expand_dims(ux1,0)
-	testtrux = tf.expand_dims(trux,0)
-	testgeom = tf.expand_dims(geometries[random],0)
 
 	# print(testux1.shape)
 	# print(testtrux.shape)
@@ -110,22 +97,38 @@ def main():
 	#
 	# print(Our_Model.loss_function(testux1,testtrux,testgeom))
 
-	fig = plt.figure()
-	ax = fig.subplots(3,2)
-	bo = ax[0,0].imshow(tf.squeeze(ux1))
-	ax[0,0].set_title('Predicted')
-	ax[0,0].set_ylabel('U_x')
-	fig.colorbar(bo, ax=ax[0,0])
-	ax[1,0].imshow(uy1)
-	ax[1,0].set_ylabel('U_y')
-	ax[2,0].imshow(p1)
-	ax[2,0].set_ylabel('P')
-	yo = ax[0,1].imshow(trux)
-	ax[0,1].set_title('CFD Results')
-	fig.colorbar(yo, ax=ax[0,1])
-	ax[1,1].imshow(truy)
-	ax[2,1].imshow(trup)
-	fig.savefig('results.png')
+	for i in np.arange(10):
+
+		random = np.random.randint(0,geom_test.shape[0])
+
+		ux1, uy1, p1 = Our_Model.call(tf.expand_dims(geom_test[random],0))
+		ux1 = tf.squeeze(ux1)
+		uy1 = tf.squeeze(uy1)
+		p1 = tf.squeeze(p1)
+
+		trux = tf.squeeze(output_test[random][0,:,:])
+		truy = tf.squeeze(output_test[random][1,:,:])
+		trup = tf.squeeze(output_test[random][2,:,:])
+
+
+		fig = plt.figure()
+		ax = fig.subplots(3,2)
+		bo = ax[0,0].imshow(tf.squeeze(ux1))
+		ax[0,0].set_title('Predicted')
+		ax[0,0].set_ylabel('U_x')
+		fig.colorbar(bo, ax=ax[0,0])
+		ax[1,0].imshow(uy1)
+		ax[1,0].set_ylabel('U_y')
+		ax[2,0].imshow(p1)
+		ax[2,0].set_ylabel('P')
+		yo = ax[0,1].imshow(trux)
+		ax[0,1].set_title('CFD Results')
+		fig.colorbar(yo, ax=ax[0,1])
+		ax[1,1].imshow(truy)
+		ax[2,1].imshow(trup)
+
+		save_str = 'results/' + str(i) + '.png'
+		fig.savefig(save_str)
 
 	# print(ux1)
 	# tf.io.write_file('testt',ux1)

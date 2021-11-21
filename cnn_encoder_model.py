@@ -8,7 +8,7 @@ class CNNAutoEncoder(tf.keras.Model):
         super(CNNAutoEncoder, self).__init__()
 
         self.adam_optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
-        self.batch_size = 128
+        self.batch_size = 32
         self.epochs = 25
 
         self.encoder_1 = Conv2D(128, 4, 4, 'same',activation='relu')
