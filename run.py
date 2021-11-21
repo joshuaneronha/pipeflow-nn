@@ -127,8 +127,8 @@ def main():
 	ax[2,1].imshow(trup)
 	fig.savefig('results.png')
 
-	print(ux1)
-	tf.io.write_file('testt',ux1)
+	# print(ux1)
+	# tf.io.write_file('testt',ux1)
 
 
 	pass
