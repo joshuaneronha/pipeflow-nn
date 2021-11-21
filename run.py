@@ -103,27 +103,32 @@ def main():
 	testtrux = tf.expand_dims(trux,0)
 	testgeom = tf.expand_dims(geometries[random],0)
 
-	print(testux1.shape)
-	print(testtrux.shape)
-	print(testgeom.shape)
-
-
-	print(Our_Model.loss_function(testux1,testtrux,testgeom))
+	# print(testux1.shape)
+	# print(testtrux.shape)
+	# print(testgeom.shape)
+	#
+	#
+	# print(Our_Model.loss_function(testux1,testtrux,testgeom))
 
 	fig = plt.figure()
 	ax = fig.subplots(3,2)
-	ax[0,0].imshow(tf.squeeze(ux1))
+	bo = ax[0,0].imshow(tf.squeeze(ux1))
 	ax[0,0].set_title('Predicted')
 	ax[0,0].set_ylabel('U_x')
+	fig.colorbar(bo, ax=ax[0,0])
 	ax[1,0].imshow(uy1)
 	ax[1,0].set_ylabel('U_y')
 	ax[2,0].imshow(p1)
 	ax[2,0].set_ylabel('P')
-	ax[0,1].imshow(trux)
+	yo = ax[0,1].imshow(trux)
 	ax[0,1].set_title('CFD Results')
+	fig.colorbar(yo, ax=ax[0,1])
 	ax[1,1].imshow(truy)
 	ax[2,1].imshow(trup)
 	fig.savefig('results.png')
+
+	print(ux1)
+	tf.io.write_file('testt',ux1)
 
 
 	pass
