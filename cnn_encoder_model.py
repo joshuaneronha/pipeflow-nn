@@ -97,20 +97,17 @@ class CNNAutoEncoder(tf.keras.Model):
 
         numDataPoints = tf.reduce_sum(mask)
         rawErrors = (tf.math.abs(prediction - true) * mask)
-        percErrors = rawErrors/true * 100
         avgRawError = tf.reduce_sum(rawErrors)/ numDataPoints
-        avgPercError = tf.reduce_sum(percErrors)/ numDataPoints
 
-        # # if first delete 'masked' values, can calculate medians:
-        # maskedPrediction = (prediction*mask)
-        # shortenedPrediction = [i for i in maskedPrediction if i != 0]
-        # maskedTruth = true*mask
-        # shortenedTruth = [i for i in maskedTruth if i != 0]
-        # shortenedRawErrors = tf.math.abs(shortenedPrediction - shortenedTruth)
-        # shortenedPercErrors = shortenedRawErrors/shortenedTruth * 100
-        # medianPercError = np.median(shortenedPercErrors)
+        # after removing 'masked' values, can calculate medians:
+        maskBoolean = tf.cast(mask, tf.bool)
+        maskedPrediction = prediction[maskBoolean]
+        maskedTruth = true[maskBoolean]
+        shortenedRawErrors = tf.math.abs(maskedPrediction - maskedTruth)
+        shortenedPercErrors = shortenedRawErrors/maskedTruth * 100
+        medianPercError = np.median(shortenedPercErrors)
 
         avgValueMagnitude = tf.reduce_sum(tf.math.abs(true)*mask) / numDataPoints
         normalizedAvgError = avgRawError/avgValueMagnitude * 100 #kind of like a percentage error
 
-        return avgRawError, avgPercError, normalizedAvgError
+        return avgRawError, medianPercError, normalizedAvgError
