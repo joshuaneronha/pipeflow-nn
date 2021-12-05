@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Conv2DTranspose
+# import tensorflow_probability as tfp
 
 class CNNAutoEncoder(tf.keras.Model):
 
@@ -82,3 +83,28 @@ class CNNAutoEncoder(tf.keras.Model):
 
         a = tf.reduce_sum(tf.square(prediction - true) * mask,axis=[1,2]) / tf.reduce_sum(mask)
         return tf.reduce_mean(a)
+
+    def prediction_error(self,prediction,true,mask):
+        try:
+            prediction = tf.squeeze(prediction,axis=3)
+        except:
+            pass
+        try:
+            mask = tf.cast(tf.squeeze(mask,axis=3),tf.float32)
+        except:
+            pass
+
+        numDataPoints = tf.reduce_sum(mask)
+        rawErrors = (tf.math.abs(prediction - true) * mask)
+        percErrors = rawErrors/true * 100
+        avgRawError = tf.reduce_sum(rawErrors,axis=[1,2])/ numDataPoints
+        avgPercError = tf.reduce_sum(percErrors,axis=[1,2])/ numDataPoints
+
+        # # if first delete 'masked' values, can calculate medians:
+        # medianRawError = np.median(rawErrors)
+        # medianPercError = np.median(percErrors)
+
+        avgValueMagnitude = tf.reduce_sum(tf.math.abs(true)*mask) / numDataPoints
+        avgRawErrorMagnitudeDividedByAvgTrueValueMagnitude = avgRawError/avgValueMagnitude
+
+        return avgRawError, avgPercError, avgRawErrorMagnitudeDividedByAvgTrueValueMagnitude
