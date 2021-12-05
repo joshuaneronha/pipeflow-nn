@@ -51,6 +51,8 @@ def test(model, geometries, results):
 	uy_normalized_error_list = []
 	p_normalized_error_list = []
 
+	ux_raw_err_list = []
+
 	while completed < len(geometries):
 
 		our_size = model.batch_size
@@ -76,21 +78,27 @@ def test(model, geometries, results):
 		uy_raw_err, uy_perc_err, uy_normalized_error = model.prediction_error(uy, results_batch[:,1,:,:],geom_batch)
 		p_raw_err, p_perc_err, p_normalized_error = model.prediction_error(p, results_batch[:,2,:,:],geom_batch)
 
+
 		ux_normalized_error_list.append(ux_normalized_error)
 		uy_normalized_error_list.append(uy_normalized_error)
 		p_normalized_error_list.append(p_normalized_error)
 
-		avg_ux_normalized_error = tf.reduce_mean(ux_normalized_error_list)
-		avg_uy_normalized_error = tf.reduce_mean(uy_normalized_error_list)
-		avg_p_normalized_error  = tf.reduce_mean(p_normalized_error_list)
-		totalAvgNormalizedError = (avg_ux_normalized_error + avg_uy_normalized_error + avg_p_normalized_error )/3
+		ux_raw_err_list.append(ux_raw_err)
+
+	avg_ux_normalized_error = tf.reduce_mean(ux_normalized_error_list)
+	avg_uy_normalized_error = tf.reduce_mean(uy_normalized_error_list)
+	avg_p_normalized_error  = tf.reduce_mean(p_normalized_error_list)
+	totalAvgNormalizedError = (avg_ux_normalized_error + avg_uy_normalized_error + avg_p_normalized_error)/3
+	avg_ux_raw_err = tf.reduce_mean(ux_raw_err_list)
 
 	print(' ')
 	print('Testing Results:')
 	print('Ux loss: ', tf.reduce_mean(ux_loss_list))
 	print('Uy loss: ', tf.reduce_mean(uy_loss_list))
 	print('P loss: ', tf.reduce_mean(p_loss_list))
+	print('Ux raw error: ', avg_ux_raw_err)
 	print('Average Total Normalized Error: ', totalAvgNormalizedError)
+
 	print(' ')
 
 def main():
