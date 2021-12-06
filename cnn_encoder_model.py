@@ -10,7 +10,7 @@ class CNNAutoEncoder(tf.keras.Model):
 
         self.adam_optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
         self.batch_size = 32
-        self.epochs = 0  #originally 25 dec5
+        self.epochs = 25  #originally 25 dec5
 
         self.encoder_1 = Conv2D(128, 4, 4, 'same',activation='relu')
 
@@ -104,7 +104,7 @@ class CNNAutoEncoder(tf.keras.Model):
         maskedPrediction = prediction[maskBoolean]
         maskedTruth = true[maskBoolean]
         shortenedRawErrors = tf.math.abs(maskedPrediction - maskedTruth)
-        shortenedPercErrors = shortenedRawErrors/maskedTruth * 100
+        shortenedPercErrors = tf.math.abs(shortenedRawErrors/maskedTruth) * 100
         medianPercError = np.median(shortenedPercErrors)
 
         avgValueMagnitude = tf.reduce_sum(tf.math.abs(true)*mask) / numDataPoints
