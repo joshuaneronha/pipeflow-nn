@@ -1,21 +1,20 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dense, Conv2DTranspose
-# import tensorflow_probability as tfp
 
 class CNNAutoEncoder(tf.keras.Model):
 
     def __init__(self):
         super(CNNAutoEncoder, self).__init__()
 
-        self.adam_optimizer = tf.keras.optimizers.Adam(learning_rate=0.005)  #.01 originally, improved w/ .005
-        self.batch_size = 32
-        self.epochs = 25  #originally 25 dec5, increasing to 35 doesn't help at all
+        self.adam_optimizer = tf.keras.optimizers.Adam(learning_rate=0.004)  #.01 originally, improved w/ .004
+        self.batch_size = 32 #was 32 originally
+        self.epochs = 40  #originally 25 dec5
 
-        self.encoder_1 = Conv2D(128, 4, 4, 'same',activation='relu')
+        self.encoder_1 = Conv2D(128, 4, 4, 'same',activation='relu') #from 4 to 8 made worse
 
         self.encoder_2 = tf.keras.Sequential()
-        self.encoder_2.add(Conv2D(256, 4, 5, 'same',activation='relu'))
+        self.encoder_2.add(Conv2D(256, 4, 5, 'same',activation='relu')) #256 to 128..33.12%, 256 to 512 gives 37.836% error
         self.encoder_2.add(Conv2D(512, 4, 2, 'same',activation='relu'))
 
         self.dense = tf.keras.layers.Dense(1024, activation = 'relu')
@@ -29,7 +28,6 @@ class CNNAutoEncoder(tf.keras.Model):
         self.decoder_ux_2.add(Conv2DTranspose(1, 4, 2, 'same'))
 
 
-
         self.decoder_uy_1 = tf.keras.Sequential()
         self.decoder_uy_1.add(Conv2DTranspose(256, 4, 2, 'same',activation='relu'))
         self.decoder_uy_1.add(Conv2DTranspose(128, 4, 5, 'same',activation='relu'))
@@ -38,10 +36,8 @@ class CNNAutoEncoder(tf.keras.Model):
         self.decoder_uy_2.add(Conv2DTranspose(64, 4, 2, 'same',activation='relu'))
         self.decoder_uy_2.add(Conv2DTranspose(1, 4, 2, 'same'))
 
-
-
         self.decoder_p_1 = tf.keras.Sequential()
-        self.decoder_p_1.add(Conv2DTranspose(256, 4, 2, 'same',activation='relu'))
+        self.decoder_p_1.add(Conv2DTranspose(256, 4, 2, 'same',activation='relu')) #256 to 512
         self.decoder_p_1.add(Conv2DTranspose(128, 4, 5, 'same',activation='relu'))
 
         self.decoder_p_2 = tf.keras.Sequential()
@@ -84,6 +80,27 @@ class CNNAutoEncoder(tf.keras.Model):
         a = tf.reduce_sum(tf.square(prediction - true) * mask,axis=[1,2]) / tf.reduce_sum(mask)
         return tf.reduce_mean(a)
 
+    def loss_functionP(self,prediction,true,mask):
+        try:
+            prediction = tf.squeeze(prediction,axis=3)
+        except:
+            pass
+        try:
+            mask = tf.cast(tf.squeeze(mask,axis=3),tf.float32)
+        except:
+            pass
+        # rms_loss = tf.sqrt(tf.cast(tf.reduce_sum(tf.square((prediction - true) * tf.cast(mask,tf.float32)),axis=[1,2]),tf.float32) / tf.cast(tf.reduce_sum(mask,axis=[1,2]),tf.float32))
+        # avgd = tf.reduce_mean(rms_loss)
+        # RMS = tf.keras.metrics.RootMeanSquaredError()
+        # RMS.update_state(true, prediction, sample_weight = mask)
+        # print(tf.convert_to_tensor(RMS.result().numpy()))
+        # return tf.convert_to_tensor(RMS.result().numpy())
+        # mse = tf.keras.losses.MeanSquaredError(reduction = ttf.keras.losses.Reduction.NONE)
+        # print(mse(true,prediction).shape)
+
+        a = tf.reduce_sum(tf.math.abs(prediction - true) * mask, axis=[1, 2]) / tf.reduce_sum(mask) #
+        return tf.reduce_mean(a)
+
     def prediction_error(self,prediction,true,mask):
         try:
             prediction = tf.squeeze(prediction,axis=3)
@@ -105,9 +122,34 @@ class CNNAutoEncoder(tf.keras.Model):
         maskedTruth = true[maskBoolean]
         shortenedRawErrors = tf.math.abs(maskedPrediction - maskedTruth)
         shortenedPercErrors = tf.math.abs(shortenedRawErrors/maskedTruth) * 100
-        medianPercError = np.median(shortenedPercErrors)
+        n = len(shortenedPercErrors)
+        orderedPercErrors = tf.sort(shortenedPercErrors)
+        medianPercError = orderedPercErrors[int(n/2)]  # median=n_num[n//2]
+        # medianPercError = np.median(shortenedPercErrors)
 
         avgValueMagnitude = tf.reduce_sum(tf.math.abs(true)*mask) / numDataPoints
         normalizedAvgError = avgRawError/avgValueMagnitude * 100 #kind of like a percentage error
 
         return avgRawError, medianPercError, normalizedAvgError
+
+    def median_perc_error(self,prediction,true,mask):
+        try:
+            prediction = tf.squeeze(prediction,axis=3)
+        except:
+            pass
+        try:
+            mask = tf.cast(tf.squeeze(mask,axis=3),tf.float32)
+        except:
+            pass
+        # after removing 'masked' values, can calculate medians:
+        maskBoolean = tf.cast(mask, tf.bool)
+        maskedPrediction = prediction[maskBoolean]
+        maskedTruth = true[maskBoolean]
+        shortenedRawErrors = tf.math.abs(maskedPrediction - maskedTruth)
+        epsilon = 1e-30
+        shortenedPercErrors = tf.math.abs(shortenedRawErrors/(maskedTruth+epsilon)) * 100
+        n = len(shortenedPercErrors)
+        orderedPercErrors = tf.sort(shortenedPercErrors)
+        medianPercError = orderedPercErrors[int(n/2)]  # median=n_num[n//2]
+        # medianPercError = np.median(shortenedPercErrors)
+        return medianPercError

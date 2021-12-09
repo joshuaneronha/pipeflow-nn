@@ -4,6 +4,7 @@ from preprocess import import_data, get_next_batch
 from cnn_encoder_model import CNNAutoEncoder
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import time
 
 def train(model, geometries, results):
 	completed = 0
@@ -17,6 +18,7 @@ def train(model, geometries, results):
 		our_size = model.batch_size
 
 		if len(geometries) - completed < model.batch_size:
+			break  # skipping last batch if woudln't be complete, makes averages/calculations easier
 			our_size = len(geometries) - completed
 
 		geom_batch, results_batch = get_next_batch(geometries, results, completed, our_size)
@@ -27,7 +29,9 @@ def train(model, geometries, results):
 			ux, uy, p = model.call(geom_batch)
 			ux_loss = model.loss_function(ux, results_batch[:,0,:,:],geom_batch) #geometries serves as the mask here
 			uy_loss = model.loss_function(uy, results_batch[:,1,:,:],geom_batch)
-			p_loss = model.loss_function(p, results_batch[:,2,:,:],geom_batch)
+			p_loss = model.loss_functionP(p, results_batch[:,2,:,:],geom_batch)
+
+
 
 		gradients = tape.gradient([ux_loss, uy_loss, p_loss], model.trainable_variables)
 		model.adam_optimizer.apply_gradients(zip(gradients, model.trainable_variables))
@@ -67,8 +71,12 @@ def test(model, geometries, results):
 		geom_batch, results_batch = get_next_batch(geometries, results, completed, our_size)
 
 		completed += our_size
-
+		# tic = time.perf_counter()
 		ux, uy, p = model.call(geom_batch)
+		# toc = time.perf_counter()
+		# batchCalculationTime = toc - tic
+		# print(f"Time to calculate for 1 batch {toc - tic:0.4f} seconds")
+
 
 		ux_loss = model.loss_function(ux, results_batch[:,0,:,:],geom_batch) #geometries serves as the mask here
 		uy_loss = model.loss_function(uy, results_batch[:,1,:,:],geom_batch)
@@ -103,6 +111,7 @@ def test(model, geometries, results):
 	totalMedianPercError = (avg_ux_perc_err+avg_uy_perc_err+avg_p_perc_err)/3
 
 	print(' ')
+	# print('batchCalculationTime', batchCalculationTime)
 	print('Testing Results:')
 	print('Ux loss: ', tf.reduce_mean(ux_loss_list))
 	print('Uy loss: ', tf.reduce_mean(uy_loss_list))
