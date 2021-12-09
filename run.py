@@ -166,24 +166,29 @@ def main():
 		ax = fig.subplots(3,2)
 		bo = ax[0,0].imshow(tf.squeeze(ux1))
 		ax[0,0].set_title('Predicted')
-		ax[0,0].set_ylabel('U_x')
+		ax[0,0].set_ylabel('U_x [m/s]')
 		fig.colorbar(bo, ax=ax[0,0])
-		ax[1,0].imshow(uy1)
-		ax[1,0].set_ylabel('U_y')
-		ax[2,0].imshow(p1)
-		ax[2,0].set_ylabel('P')
+		UY = ax[1,0].imshow(uy1)
+		ax[1,0].set_ylabel('U_y [m/s]')
+		fig.colorbar(UY, ax=ax[1, 0])
+		Pplot = ax[2,0].imshow(p1)
+		ax[2,0].set_ylabel('P [pa]')
+		fig.colorbar(Pplot, ax=ax[2, 0])
 		yo = ax[0,1].imshow(trux)
 		ax[0,1].set_title('CFD Results')
-		fig.colorbar(yo, ax=ax[0,1])
-		ax[1,1].imshow(truy)
-		ax[2,1].imshow(trup)
+		Cbar = fig.colorbar(yo, ax=ax[0,1])
+		Cbar.ax.set_ylabel('[m/s]')
+		truY = ax[1,1].imshow(truy)
+		CbarY = fig.colorbar(truY, ax=ax[1, 1])
+		CbarY.ax.set_ylabel('[m/s]')
+		truP = ax[2,1].imshow(trup)
+		CbarP = fig.colorbar(truP, ax=ax[2, 1])
+		CbarP.ax.set_ylabel('[pa]')
 
 		save_str = 'results/' + str(i) + '.png'
 		fig.savefig(save_str)
-
 	# print(ux1)
 	# tf.io.write_file('testt',ux1)
-
 
 	pass
 
